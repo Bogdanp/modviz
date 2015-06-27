@@ -14,7 +14,7 @@ def test_find_simple_from():
 
 
 def test_package_relative_from():
-    modules = [Module("/", "foo"), Module("/", "foo/bar.py"), Module("/", "baz")]
+    modules = [Module("/", "foo/__init__.py"), Module("/", "foo/bar.py"), Module("/", "baz")]
     source = "from . import Baz"
     finder = ReferenceFinder(modules, modules[0])
     finder.visit(ast.parse(source))

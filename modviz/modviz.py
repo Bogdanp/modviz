@@ -38,6 +38,8 @@ class ReferenceFinder(ast.NodeVisitor):
             module = self.module.up_by(depth)
             if node.module is not None:
                 module = module.relative_ref(node.module)
+
+            if module != self.module:
                 self.add(module)
 
         for alias in node.names:
@@ -55,7 +57,7 @@ class Module(namedtuple("Module", ("root", "filename", "virtual_filename", "virt
         if modulename.endswith(".py"):
             return modulename[:-3]
 
-        return "{}.__init__".format(modulename)
+        return modulename
 
     @staticmethod
     def modulename_to_filename(modulename):
@@ -65,8 +67,11 @@ class Module(namedtuple("Module", ("root", "filename", "virtual_filename", "virt
     @property
     def qualified_name(self):
         if self.virtual_filename is None:
-            return self.filename_to_modulename(self.filename)
-        return self.filename_to_modulename(self.virtual_filename)
+            name = self.filename_to_modulename(self.filename)
+        else:
+            name = self.filename_to_modulename(self.virtual_filename)
+
+        return name.replace(".__init__", "")
 
     @property
     def filepath(self):
@@ -82,8 +87,7 @@ class Module(namedtuple("Module", ("root", "filename", "virtual_filename", "virt
         return Module(self.root, self.modulename_to_filename(qualified_name))
 
     def relative_ref(self, qualified_name):
-        selfname = self.qualified_name.replace(".__init__", "")
-        modulename = "{}.{}".format(selfname, qualified_name)
+        modulename = "{}.{}".format(self.qualified_name, qualified_name)
         filename = self.modulename_to_filename(modulename)
         if self.virtual_filename:
             virtual_filename = filename
@@ -122,8 +126,6 @@ class Module(namedtuple("Module", ("root", "filename", "virtual_filename", "virt
         return finder.references
 
     def __str__(self):
-        if self.qualified_name.endswith(".__init__"):
-            return self.qualified_name.replace(".__init__", "")
         return self.qualified_name
 
     def __eq__(self, other):
@@ -150,7 +152,7 @@ def itermodules(path):
 def viz(path, fold_paths=None, exclude_paths=None):
     fold_paths = fold_paths or []
     exclude_paths = exclude_paths or []
-    nodes, edges, modules = [], [], []
+    nodes, edges, modules, dataset = [], [], [], set()
     for module in itermodules(path):
         exclude = False
 
@@ -167,11 +169,14 @@ def viz(path, fold_paths=None, exclude_paths=None):
             modules.append(module)
 
     for module in modules:
-        nodes.append({
-            "id": modules.index(module),
-            "group": str(module).split(".")[0],
-            "label": str(module)
-        })
+        idx = modules.index(module)
+        if idx not in dataset:
+            dataset.add(idx)
+            nodes.append({
+                "id": idx,
+                "group": str(module).split(".")[0],
+                "label": str(module)
+            })
 
         for reference in module.get_references(modules):
             edges.append({

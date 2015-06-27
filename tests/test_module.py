@@ -7,9 +7,9 @@ from modviz import Module
 
 def test_filename_conversion():
     assert Module.filename_to_modulename("foo/bar/baz.py") == "foo.bar.baz"
-    assert Module.filename_to_modulename("foo/bar") == "foo.bar.__init__"
+    assert Module.filename_to_modulename("foo/bar") == "foo.bar"
     assert Module.filename_to_modulename("foo.py") == "foo"
-    assert Module.filename_to_modulename("foo") == "foo.__init__"
+    assert Module.filename_to_modulename("foo") == "foo"
 
     with pytest.raises(AssertionError):
         assert Module.filename_to_modulename("")
@@ -29,7 +29,7 @@ def test_standard_qualified_names():
     assert module.qualified_name == "foo.bar"
 
     module = Module("/", "foo/bar")
-    assert module.qualified_name == "foo.bar.__init__"
+    assert module.qualified_name == "foo.bar"
 
 
 def test_virtual_qualified_names():
@@ -37,7 +37,7 @@ def test_virtual_qualified_names():
     assert module.qualified_name == "bar"
 
     module = Module("/", "foo/bar", "bar")
-    assert module.qualified_name == "bar.__init__"
+    assert module.qualified_name == "bar"
 
 
 def test_module_defaults():
@@ -120,13 +120,19 @@ def test_relative_ref():
 
 def test_up_by():
     module = Module("/", "foo/bar/baz.py")
-    assert module.up_by(1).qualified_name == "foo.bar.__init__"
-    assert module.up_by(2).qualified_name == "foo.__init__"
+    assert module.up_by(1).qualified_name == "foo.bar"
+    assert module.up_by(2).qualified_name == "foo"
 
     module = Module("/foo", "sub/bar/baz.py")
     module = module.fold("/foo/sub")
     module = module.up_by(1)
-    assert module.qualified_name == "bar.__init__"
+    assert module.qualified_name == "bar"
     assert module.filepath == "/foo/sub/bar"
     assert module.filename == "sub/bar"
     assert module.virtual_filename == "bar"
+
+
+def test_equality():
+    assert Module("/", "foo.py") == Module("/", "foo.py")
+    assert Module("/", "foo/bar.py") == Module("/", "foo/bar.py")
+    assert Module("/", "foo/bar") == Module("/", "foo/bar.py")

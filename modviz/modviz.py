@@ -50,6 +50,7 @@ class Module(namedtuple("Module", ("root", "filename", "virtual_filename", "virt
 
     @staticmethod
     def filename_to_modulename(filename):
+        assert filename, "empty filename"
         modulename = filename.replace("/", ".")
         if modulename.endswith(".py"):
             return modulename[:-3]
@@ -58,6 +59,7 @@ class Module(namedtuple("Module", ("root", "filename", "virtual_filename", "virt
 
     @staticmethod
     def modulename_to_filename(modulename):
+        assert modulename, "empty modulename"
         return modulename.replace(".", "/") + ".py"
 
     @property
@@ -90,11 +92,17 @@ class Module(namedtuple("Module", ("root", "filename", "virtual_filename", "virt
         return self.copy(filename=filename)
 
     def up_by(self, n):
+        virtual_filename = self.virtual_filename
         filename = self.filename
         for i in range(n):
             filename = os.path.dirname(filename)
+            if self.virtual_filename:
+                virtual_filename = os.path.dirname(virtual_filename)
 
-        return self.copy(filename=filename)
+        return self.copy(
+            filename=filename,
+            virtual_filename=virtual_filename
+        )
 
     def copy(self, root=None, filename=None, virtual_filename=None, virtual_diff=None):
         return Module(
@@ -146,14 +154,14 @@ def viz(path, fold_paths=None, exclude_paths=None):
     for module in itermodules(path):
         exclude = False
 
-        for fold_path in fold_paths:
-            if module.filepath.startswith(fold_path):
-                module = module.fold(fold_path)
-
         for exclude_path in exclude_paths:
             if module.filepath.startswith(exclude_path):
                 exclude = True
                 break
+
+        for fold_path in fold_paths:
+            if module.filepath.startswith(fold_path):
+                module = module.fold(fold_path)
 
         if not exclude:
             modules.append(module)

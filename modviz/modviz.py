@@ -139,16 +139,24 @@ def itermodules(path):
                 yield Module(path, filepath[skipcount:])
 
 
-def viz(path, fold_paths=None):
+def viz(path, fold_paths=None, exclude_paths=None):
     fold_paths = fold_paths or []
-    nodes, edges = [], []
-    modules = []
+    exclude_paths = exclude_paths or []
+    nodes, edges, modules = [], [], []
     for module in itermodules(path):
+        exclude = False
+
         for fold_path in fold_paths:
             if module.filepath.startswith(fold_path):
                 module = module.fold(fold_path)
 
-        modules.append(module)
+        for exclude_path in exclude_paths:
+            if module.filepath.startswith(exclude_path):
+                exclude = True
+                break
+
+        if not exclude:
+            modules.append(module)
 
     for module in modules:
         nodes.append({

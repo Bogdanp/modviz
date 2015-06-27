@@ -9,7 +9,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Modviz lets you visualize your module dependencies.")
     parser.add_argument("path", metavar="PATH", help="the path to the package you want to visualize")
     parser.add_argument("-o", dest="target", help="the output file (default: stdout)")
-    parser.add_argument("-f", dest="fold_paths", nargs="*")
+    parser.add_argument("-f", dest="fold_paths", nargs="*", help="paths that need to be folded up ('vendor' dirs, for example)")
+    parser.add_argument("-e", dest="exclude_paths", nargs="*", help="paths that should be excluded from the output")
     return parser.parse_args()
 
 
@@ -26,7 +27,7 @@ def main():
             sys.stderr.write("error: invalid fold path '{}'\n".format(fold_path))
             return 1
 
-    result = viz(arguments.path, arguments.fold_paths)
+    result = viz(arguments.path, arguments.fold_paths, arguments.exclude_paths)
     if arguments.target:
         with open(arguments.target, "w") as f:
             f.write(result)

@@ -2,6 +2,8 @@
 
 Modviz lets you visualize your module dependencies.
 
+[![Build Status](https://travis-ci.org/Bogdanp/modviz.svg?branch=master)](https://travis-ci.org/Bogdanp/modviz)
+
 ## Installation
 
 `pip install modviz`

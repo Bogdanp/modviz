@@ -21,7 +21,7 @@ class ReferenceFinder(ast.NodeVisitor):
         self.references = set()
 
     def add(self, module):
-        if module in self.known_modules:
+        if module != self.module and module in self.known_modules:
             self.references.add(module)
 
     def visit_Import(self, node):
@@ -39,8 +39,7 @@ class ReferenceFinder(ast.NodeVisitor):
             if node.module is not None:
                 module = module.relative_ref(node.module)
 
-            if module != self.module:
-                self.add(module)
+            self.add(module)
 
         for alias in node.names:
             self.add(module.relative_ref(alias.name))
@@ -130,6 +129,9 @@ class Module(namedtuple("Module", ("root", "filename", "virtual_filename", "virt
 
     def __eq__(self, other):
         return self.qualified_name == other.qualified_name
+
+    def __ne__(self, other):
+        return self.qualified_name != other.qualified_name
 
 
 def iterpackages(path):

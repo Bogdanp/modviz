@@ -1,0 +1,192 @@
+<html>
+    <head>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.3.0/vis.min.js"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.3.0/vis.min.css" rel="stylesheet" type="text/css" />
+
+        <style type="text/css">
+            #network {
+                width: auto;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="network"></div>
+
+        <script type="text/javascript">
+            var nodes = new vis.DataSet([
+    {
+        "group": "mold", 
+        "id": 0, 
+        "label": "mold"
+    }, 
+    {
+        "group": "mold", 
+        "id": 1, 
+        "label": "mold.codegen"
+    }, 
+    {
+        "group": "mold", 
+        "id": 2, 
+        "label": "mold.context"
+    }, 
+    {
+        "group": "mold", 
+        "id": 3, 
+        "label": "mold.environment"
+    }, 
+    {
+        "group": "mold", 
+        "id": 4, 
+        "label": "mold.parser"
+    }, 
+    {
+        "group": "mold", 
+        "id": 5, 
+        "label": "mold.template"
+    }, 
+    {
+        "group": "mold", 
+        "id": 6, 
+        "label": "mold.tokenizer"
+    }, 
+    {
+        "group": "tests", 
+        "id": 7, 
+        "label": "tests"
+    }, 
+    {
+        "group": "tests", 
+        "id": 8, 
+        "label": "tests.common"
+    }, 
+    {
+        "group": "tests", 
+        "id": 9, 
+        "label": "tests.test_context"
+    }, 
+    {
+        "group": "tests", 
+        "id": 10, 
+        "label": "tests.test_environment"
+    }, 
+    {
+        "group": "tests", 
+        "id": 11, 
+        "label": "tests.test_parser"
+    }, 
+    {
+        "group": "tests", 
+        "id": 12, 
+        "label": "tests.test_tokenizer"
+    }
+]);
+            var edges = new vis.DataSet([
+    {
+        "to": 4, 
+        "from": 0
+    }, 
+    {
+        "to": 2, 
+        "from": 0
+    }, 
+    {
+        "to": 3, 
+        "from": 0
+    }, 
+    {
+        "to": 2, 
+        "from": 1
+    }, 
+    {
+        "to": 6, 
+        "from": 1
+    }, 
+    {
+        "to": 5, 
+        "from": 1
+    }, 
+    {
+        "to": 4, 
+        "from": 3
+    }, 
+    {
+        "to": 2, 
+        "from": 3
+    }, 
+    {
+        "to": 6, 
+        "from": 3
+    }, 
+    {
+        "to": 1, 
+        "from": 3
+    }, 
+    {
+        "to": 6, 
+        "from": 4
+    }, 
+    {
+        "to": 2, 
+        "from": 5
+    }, 
+    {
+        "to": 2, 
+        "from": 9
+    }, 
+    {
+        "to": 8, 
+        "from": 10
+    }, 
+    {
+        "to": 3, 
+        "from": 10
+    }, 
+    {
+        "to": 4, 
+        "from": 11
+    }, 
+    {
+        "to": 6, 
+        "from": 11
+    }, 
+    {
+        "to": 8, 
+        "from": 11
+    }, 
+    {
+        "to": 6, 
+        "from": 12
+    }
+]);
+            var container = document.getElementById("network");
+            var data = {
+                nodes: nodes,
+                edges: edges
+            };
+            var options = {
+                edges: {
+                    arrows: {
+                        to:   {enabled: true, scaleFactor: 1},
+                        from: {enabled: true, scaleFactor: 1}
+                    }
+                },
+                physics: {
+                    forceAtlas2Based: {
+                        gravitationalConstant: -26,
+                        centralGravity: 0.005,
+                        springLength: 230,
+                        springConstant: 0.18
+                    },
+                    maxVelocity: 146,
+                    solver: "forceAtlas2Based",
+                    timestep: 0.35,
+                    stabilization: {
+                        iterations: 600
+                    }
+                }
+            };
+            var network = new vis.Network(container, data, options);
+        </script>
+    </body>
+</html>

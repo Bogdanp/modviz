@@ -44,7 +44,10 @@ class ReferenceFinder(ast.NodeVisitor):
             self.add(module.relative_ref(alias.name))
 
 
-class Module(namedtuple("Module", ("root", "filename",))):
+class Module(namedtuple("Module", ("root", "filename", "virtual_filename", "virtual_diff"))):
+    def __new__(cls, root, filename, virtual_filename=None, virtual_diff=None):
+        return super(Module, cls).__new__(cls, root, filename, virtual_filename, virtual_diff)
+
     @staticmethod
     def filename_to_modulename(filename):
         modulename = filename.replace("/", ".")
@@ -59,23 +62,32 @@ class Module(namedtuple("Module", ("root", "filename",))):
 
     @property
     def qualified_name(self):
-        return self.filename_to_modulename(self.filename)
+        if self.virtual_filename is None:
+            return self.filename_to_modulename(self.filename)
+        return self.filename_to_modulename(self.virtual_filename)
 
     @property
     def filepath(self):
         return os.path.join(self.root, self.filename)
 
+    def fold(self, path):
+        assert path.startswith(self.root), "invalid fold path"
+        path = path[len(self.root) + 1:]
+        filename = self.filename[len(path) + 1:]
+        return self.copy(virtual_filename=filename, virtual_diff=path)
+
     def absolute_ref(self, qualified_name):
-        filename = self.modulename_to_filename(qualified_name)
-        module = self.copy(filename=filename)
-        return module
+        return Module(self.root, self.modulename_to_filename(qualified_name))
 
     def relative_ref(self, qualified_name):
         selfname = self.qualified_name.replace(".__init__", "")
         modulename = "{}.{}".format(selfname, qualified_name)
         filename = self.modulename_to_filename(modulename)
-        module = self.copy(filename=filename)
-        return module
+        if self.virtual_filename:
+            virtual_filename = filename
+            filename = os.path.join(self.virtual_diff, filename)
+            return self.copy(filename=filename, virtual_filename=virtual_filename)
+        return self.copy(filename=filename)
 
     def up_by(self, n):
         filename = self.filename
@@ -84,10 +96,12 @@ class Module(namedtuple("Module", ("root", "filename",))):
 
         return self.copy(filename=filename)
 
-    def copy(self, root=None, filename=None):
+    def copy(self, root=None, filename=None, virtual_filename=None, virtual_diff=None):
         return Module(
             root=root or self.root,
-            filename=filename or self.filename
+            filename=filename or self.filename,
+            virtual_filename=virtual_filename or self.virtual_filename,
+            virtual_diff=virtual_diff or self.virtual_diff
         )
 
     def get_references(self, known_modules):
@@ -125,9 +139,17 @@ def itermodules(path):
                 yield Module(path, filepath[skipcount:])
 
 
-def viz(path):
+def viz(path, fold_paths=None):
+    fold_paths = fold_paths or []
     nodes, edges = [], []
-    modules = list(itermodules(path))
+    modules = []
+    for module in itermodules(path):
+        for fold_path in fold_paths:
+            if module.filepath.startswith(fold_path):
+                module = module.fold(fold_path)
+
+        modules.append(module)
+
     for module in modules:
         nodes.append({
             "id": modules.index(module),

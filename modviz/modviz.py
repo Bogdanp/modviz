@@ -19,10 +19,14 @@ class ReferenceFinder(ast.NodeVisitor):
         self.known_modules = known_modules
         self.module = module
         self.references = set()
+        self.ext_references = set()
 
     def add(self, module):
-        if module != self.module and module in self.known_modules:
-            self.references.add(module)
+        if module != self.module:
+            if module in self.known_modules:
+                self.references.add(module)
+            else:
+                self.ext_references.add(module)
 
     def visit_Import(self, node):
         for alias in node.names:
@@ -122,7 +126,7 @@ class Module(namedtuple("Module", ("root", "filename", "virtual_filename", "virt
         tree = ast.parse(contents)
         finder = ReferenceFinder(known_modules, self)
         finder.visit(tree)
-        return finder.references
+        return finder.references, finder.ext_references
 
     def __str__(self):
         return self.qualified_name
@@ -151,10 +155,10 @@ def itermodules(path):
                 yield Module(path, filepath[skipcount:])
 
 
-def viz(path, fold_paths=None, exclude_paths=None):
+def viz(path, fold_paths=None, exclude_paths=None, show_external=False):
     fold_paths = fold_paths or []
     exclude_paths = exclude_paths or []
-    nodes, edges, modules, dataset = [], [], [], set()
+    nodes, edges, modules, ext_modules, dataset = [], [], [], [], set()
     for module in itermodules(path):
         exclude = False
 
@@ -180,11 +184,27 @@ def viz(path, fold_paths=None, exclude_paths=None):
                 "label": str(module)
             })
 
-        for reference in module.get_references(modules):
+        references, ext_references = module.get_references(modules)
+
+        for reference in references:
             edges.append({
                 "from": modules.index(module),
                 "to": modules.index(reference)
             })
+
+        if show_external:
+            for ext_reference in ext_references:
+                if ext_reference not in ext_modules:
+                    nodes.append({
+                        "id": len(modules) + len(ext_modules),
+                        "group": str(ext_reference).split(".")[0],
+                        "label": str(ext_reference)
+                    })
+                    ext_modules.append(ext_reference)
+                edges.append({
+                    "from": modules.index(module),
+                    "to": len(modules) + ext_modules.index(ext_reference)
+                })
 
     return TEMPLATE.substitute(
         nodes=json.dumps(nodes, indent=4),

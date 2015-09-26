@@ -14,7 +14,7 @@ Modviz lets you visualize your module dependencies.
 
 ```
 ~$ modviz --help
-usage: modviz [-h] [-o TARGET] [-f [FOLD_PATHS [FOLD_PATHS ...]]] [-e [EXCLUDE_PATHS [EXCLUDE_PATHS ...]]] PATH
+usage: modviz [-h] [-o TARGET] [-f [FOLD_PATHS [FOLD_PATHS ...]]] [-e [EXCLUDE_PATHS [EXCLUDE_PATHS ...]]] [-x] PATH
 
 Modviz lets you visualize your module dependencies.
 
@@ -28,6 +28,7 @@ optional arguments:
                         paths that need to be folded up ('vendor' dirs, for example)
   -e [EXCLUDE_PATHS [EXCLUDE_PATHS ...]]
                         paths that should be excluded from the output
+  -x                    show external modules
 ```
 
 ## Screenshot

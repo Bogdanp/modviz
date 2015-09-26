@@ -19,3 +19,27 @@ def test_package_relative_from():
     finder = ReferenceFinder(modules, modules[1])
     finder.visit(ast.parse(source))
     assert finder.references == set([Module("/", "foo/bar.py")])
+
+def test_find_external():
+    modules = [Module("/", "foo/bar.py")]
+    source = "import baz"
+    finder = ReferenceFinder(modules, modules[0])
+    finder.visit(ast.parse(source))
+    assert finder.ext_references == set([Module("/", "baz.py")])
+
+def test_find_external_dot():
+    modules = [Module("/", "foo/bar.py")]
+    source = "import baz.bazz"
+    finder = ReferenceFinder(modules, modules[0])
+    finder.visit(ast.parse(source))
+    assert finder.ext_references == set([Module("/", "baz/bazz.py")])
+
+def test_find_external_from_import():
+    modules = [Module("/", "foo/bar.py")]
+    source = "from baz import bazz"
+    finder = ReferenceFinder(modules, modules[0])
+    finder.visit(ast.parse(source))
+    assert finder.ext_references == set([
+        Module("/", "baz.py"),
+        Module("/", "baz/bazz.py")
+    ])

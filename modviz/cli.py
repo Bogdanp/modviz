@@ -11,7 +11,6 @@ def parse_arguments(args=None):
     parser.add_argument("-o", dest="target", help="the output file (default: stdout)")
     parser.add_argument("-f", dest="fold_paths", nargs="*", help="paths that need to be folded up ('vendor' dirs, for example)")
     parser.add_argument("-e", dest="exclude_paths", nargs="*", help="paths that should be excluded from the output")
-    parser.add_argument("-r", dest="req_filename", help="requirements filename (default: requirements.txt)")
     parser.add_argument("-x", dest="show_external", action="store_true", help="show external modules")
     parser.set_defaults(show_external=False)
     if args is None:  # pragma: no coverage

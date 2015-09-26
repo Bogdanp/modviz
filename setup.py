@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="modviz",
-    version="0.1.4",
+    version="0.2.0",
     description="Modviz lets you visualize your module dependencies.",
     long_description="https://github.com/Bogdanp/modviz",
     packages=["modviz"],
